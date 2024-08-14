@@ -7,7 +7,7 @@ python3 /path/to/y-haplogroup-predictor.py
 ```
 ## Description
 
-Y-Haplogroup-Predictor detects SNPs associated with haplogroups when provided raw DNA data which is formatted in rsID format. This script calculates which SNPS are the most prevalent in a sample and decides the haplogroup.
+Y-Haplogroup-Predictor detects SNPs associated with haplogroups when provided raw DNA data which is formatted in rsID format. This script calculates which SNPs are the most prevalent in a sample and decides the haplogroup.
 
 The intention of this software is to provide a FOSS alternative to detecting haplogroups. Databreaches occur often and institutions shouldn't be trusted with processing / storing client genetic data over a long period of time. Y-Haplogroup-Predictor is completely private and can be ran offline without sending PIA to a website.
 
