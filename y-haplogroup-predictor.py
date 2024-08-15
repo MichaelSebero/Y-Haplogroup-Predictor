@@ -197,36 +197,61 @@ def parse_dna_file(file_path):
     return detected_snps
 
 def calculate_haplogroups(detected_snps):
-    broad_haplogroup_counts = defaultdict(int)
-    specific_haplogroup_counts = defaultdict(int)
+    broad_haplogroup_scores = defaultdict(int)
+    specific_haplogroup_scores = defaultdict(int)
     snps_detected_in_haplogroups = defaultdict(list)
+
+    # Define SNP weights
+    high_weight_snps = {
+        "rs9786184": 15, "rs35547782": 15, "rs17307294": 15, "rs9341274": 15, 
+        "rs2032637": 15, "rs34626372": 15, "rs796827870": 15, "rs3912": 15, 
+        "rs34276300": 15
+    }
+    medium_weight_snps = {
+        "rs2020857": 10, "rs2032622": 10, "rs2032626": 10, "rs2032644": 10, 
+        "rs2032655": 10, "rs150173": 10, "rs9785702": 10, "rs9786153": 10, 
+        "rs16981293": 10, "rs17222279": 10, "rs1800865": 10, "rs1236440": 10, 
+        "rs2032615": 10, "rs20321": 10, "rs9341296": 10, "rs13447354": 10, 
+        "rs17316597": 10
+    }
+    low_weight_snps = defaultdict(lambda: 5)
 
     for broad_haplogroup, subclades in haplogroup_snps.items():
         for subclade, snps_list in subclades.items():
-            detected_snps_in_subclade = [snp for snp in snps_list if snp in detected_snps and detected_snps[snp] in snps_list[snp]]
-            if detected_snps_in_subclade:
-                specific_haplogroup_counts[subclade] += len(detected_snps_in_subclade)
-                broad_haplogroup_counts[broad_haplogroup] += len(detected_snps_in_subclade)
-                snps_detected_in_haplogroups[subclade].extend(detected_snps_in_subclade)
+            subclade_score = 0
+            for snp, genotypes in snps_list.items():
+                if snp in detected_snps:
+                    genotype = detected_snps[snp]
+                    if genotype in genotypes:
+                        weight = high_weight_snps.get(snp, medium_weight_snps.get(snp, low_weight_snps[snp]))
+                        subclade_score += weight
+                        broad_haplogroup_scores[broad_haplogroup] += weight
+                        snps_detected_in_haplogroups[subclade].append(snp)
+            if subclade_score == 0:
+                subclade_score = 'not calculated'
+            specific_haplogroup_scores[subclade] = subclade_score
 
-    return broad_haplogroup_counts, specific_haplogroup_counts, snps_detected_in_haplogroups
+    return broad_haplogroup_scores, specific_haplogroup_scores, snps_detected_in_haplogroups
 
-def predict_haplogroup(broad_haplogroup_counts):
-    if not broad_haplogroup_counts:
+def predict_haplogroup(broad_haplogroup_scores):
+    if not broad_haplogroup_scores:
         return "Unknown"
-    predicted_haplogroup = max(broad_haplogroup_counts, key=broad_haplogroup_counts.get)
+    predicted_haplogroup = max(broad_haplogroup_scores, key=broad_haplogroup_scores.get)
     return predicted_haplogroup
 
-def print_results(predicted_haplogroup, broad_haplogroup_counts, specific_haplogroup_counts, snps_detected_in_haplogroups):
+def print_results(predicted_haplogroup, broad_haplogroup_scores, specific_haplogroup_scores, snps_detected_in_haplogroups):
     print(f"\033[1mPredicted Y Haplogroup:\033[0m {predicted_haplogroup}\n")
     
-    print("\033[1mHaplogroup Detection:\033[0m")
-    for broad_haplogroup, count in broad_haplogroup_counts.items():
-        print(f"{broad_haplogroup}: {count} SNPs detected")
+    print("\033[1mHaplogroup Detection Scores:\033[0m")
+    for broad_haplogroup, score in broad_haplogroup_scores.items():
+        print(f"{broad_haplogroup}: {score} points")
 
-    print("\n\033[1mSubclade Detection:\033[0m")
-    for subclade, count in specific_haplogroup_counts.items():
-        print(f"{subclade}: {count} SNPs detected")
+    print("\n\033[1mSubclade Detection Scores:\033[0m")
+    for subclade, score in specific_haplogroup_scores.items():
+        if score == 'not calculated':
+            print(f"{subclade}: Not calculated")
+        else:
+            print(f"{subclade}: {score} points")
 
     print("\n\033[1mDetected SNPs by Haplogroup:\033[0m")
     for subclade, snps in snps_detected_in_haplogroups.items():
@@ -239,9 +264,9 @@ def main():
         return
 
     detected_snps = parse_dna_file(dna_file_path)
-    broad_haplogroup_counts, specific_haplogroup_counts, snps_detected_in_haplogroups = calculate_haplogroups(detected_snps)
-    predicted_haplogroup = predict_haplogroup(broad_haplogroup_counts)
-    print_results(predicted_haplogroup, broad_haplogroup_counts, specific_haplogroup_counts, snps_detected_in_haplogroups)
+    broad_haplogroup_scores, specific_haplogroup_scores, snps_detected_in_haplogroups = calculate_haplogroups(detected_snps)
+    predicted_haplogroup = predict_haplogroup(broad_haplogroup_scores)
+    print_results(predicted_haplogroup, broad_haplogroup_scores, specific_haplogroup_scores, snps_detected_in_haplogroups)
 
 if __name__ == "__main__":
     main()
