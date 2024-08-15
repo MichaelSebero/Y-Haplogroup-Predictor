@@ -203,8 +203,8 @@ def calculate_haplogroups(detected_snps):
 
     # Define SNP weights
     high_weight_snps = {
-        "rs9786184": 15, "rs35547782": 15, "rs17307294": 15, "rs9341274": 15, 
-        "rs2032637": 15, "rs34626372": 15, "rs796827870": 15, "rs3912": 15, 
+        "rs9786184": 15, "rs17307294": 15, "rs9341274": 15, 
+        "rs2032637": 15, "rs34626372": 15, "rs3912": 15, 
         "rs34276300": 15
     }
     medium_weight_snps = {
